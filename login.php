@@ -2,6 +2,12 @@
 require_once 'db_connect.php'; // Connexion à la base de données
 session_start(); // Démarrage de la session
 
+// Redirection si l'utilisateur est déjà connecté
+if (isset($_SESSION['email'])) {
+    header("Location: espacemembre.php");
+    exit();
+}
+
 // Traitement du formulaire lors de la soumission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
@@ -11,18 +17,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Veuillez remplir tous les champs.";
     } else {
         // Rechercher l'utilisateur dans la base de données
-        $stmt = $conn->prepare("SELECT * FROM user WHERE email = :email");
+        $stmt = $conn->prepare("SELECT name, email, password FROM user WHERE email = :email");
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['id'] = $user['id'];
             $_SESSION['name'] = $user['name'];
-            $_SESSION['surname'] = $user['surname'];
             $_SESSION['email'] = $user['email'];
 
-            header("Location: espacemembre.php"); // Redirection après authentification
+
+            header("Location: espacemembre.php");
             exit();
         } else {
             $error = "Identifiant ou mot de passe incorrect.";
@@ -37,7 +42,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Connexion</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -50,8 +54,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <div class="card-body">
                         <?php if (!empty($error)) : ?>
-                            <div class="alert alert-danger">
-                                <?php echo $error; ?>
+                            <div class="alert alert-danger text-center">
+                                <?= $error; ?>
                             </div>
                         <?php endif; ?>
                         
@@ -70,14 +74,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </form>
                     </div>
                     <div class="card-footer text-center">
-                        <small>Vous n'avez pas de compte ? <a href="register.php">Inscrivez-vous ici</a></small>
+                        <a href="index.php" class="btn btn-secondary">Retour à l'accueil</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Bootstrap JS (optional for interactive elements) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

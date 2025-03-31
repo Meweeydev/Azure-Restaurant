@@ -5,18 +5,18 @@ if(isset($_POST["submit"])) {
     $target_file = $target_dir . basename($_FILES["file"]["name"]);
     $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
-    // Vérifier si c'est une image
+    // Vérifier si le fichier est bien une image
     $check = getimagesize($_FILES["file"]["tmp_name"]);
     if($check !== false) {
         if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)) {
-            header("Location: https://azure-restaurant.alwaysdata.net/espacemembre.php");
+            header("Location: https://azure-restaurant.alwaysdata.net/espacemembre.php?success=uploaded");
             exit;
         } else {
-            header("Location: ".$_SERVER['PHP_SELF']."?error=upload_failed");
+            header("Location: https://azure-restaurant.alwaysdata.net/espacemembre.php?error=upload_failed");
             exit;
         }
     } else {
-        header("Location: ".$_SERVER['PHP_SELF']."?error=not_image");
+        header("Location: https://azure-restaurant.alwaysdata.net/espacemembre.php?error=not_image");
         exit;
     }
 }
@@ -26,10 +26,10 @@ if(isset($_POST["delete"])) {
     $file_to_delete = $_POST["delete_file"];
     if(file_exists($file_to_delete)) {
         unlink($file_to_delete);
-        header("Location: ".$_SERVER['PHP_SELF']."?deleted=1");
+        header("Location: https://azure-restaurant.alwaysdata.net/espacemembre.php?success=deleted");
         exit;
     } else {
-        header("Location: ".$_SERVER['PHP_SELF']."?error=file_not_found");
+        header("Location: https://azure-restaurant.alwaysdata.net/espacemembre.php?error=delete_failed");
         exit;
     }
 }

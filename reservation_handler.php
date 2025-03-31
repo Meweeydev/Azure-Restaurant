@@ -95,7 +95,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $headers .= "From: noreply@azure-restaurant-reservation.com" . "\r\n";
 
     if (mail($to, $subject, $message, $headers)) {
+        $servername = "mysql-azure-restaurant.alwaysdata.net";
+        $username = "374595";
+        $password = "5uFW456Pjsf7du";
+        $dbname = "azure-restaurant_restau";
+        
+        try {
+            $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            die("Connection failed: " . $e->getMessage());
+        }
+        try {
+
+
+        $sql = "INSERT INTO reservation (user_name,phonenumber,reservation_date,number_people) VALUES (:user_name, :phone_number,:reservation_date,:number_people)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':user_name', $nom);
+        $stmt->bindParam(':reservation_date', $datereser);
+        $stmt->bindParam(':number_people', $nbconvive);
+        $stmt->bindParam(':phone_number', $phonenumber);
+        $stmt->execute(); 
         header("Location: index.php?statusReservation=success#reservation");
+    } catch (PDOException $e) {
+        die("Connection failed: " . $e->getMessage());
+    }
     }
 }
 ?>

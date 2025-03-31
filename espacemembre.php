@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+if (!isset($_SESSION['email'])) {
+    header("Location: login.php");
+    exit();
+}
+
 if (isset($_GET['error'])) {
     if ($_GET['error'] == 'upload_failed') {
         echo '<div class="alert alert-danger text-center">❌ Échec de l\'upload. Veuillez réessayer.</div>';
@@ -14,6 +19,52 @@ if (isset($_GET['error'])) {
 }
 
 require 'db_connect.php';
+
+///// INSCRIPTION : 
+
+// Traitement du formulaire lors de la soumission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
+    $confirm_password = trim($_POST['confirm_password']);
+
+    // Validation des champs
+    if (empty($name) || empty($email) || empty($password) || empty($confirm_password)) {
+        $error = "Veuillez remplir tous les champs.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "L'adresse e-mail est invalide.";
+    } elseif ($password !== $confirm_password) {
+        $error = "Les mots de passe ne correspondent pas.";
+    } else {
+        // Vérifier si l'e-mail existe déjà
+        $stmt = $conn->prepare("SELECT * FROM user WHERE email = :email");
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        $existingUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingUser) {
+            $error = "Un compte avec cet e-mail existe déjà.";
+        } else {
+            // Hachage du mot de passe
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            // Insérer le nouvel utilisateur dans la base de données
+            $stmt = $conn->prepare("INSERT INTO user (name, email, password, signin_date) VALUES (:name, :email, :password, NOW())");
+            $stmt->bindParam(':name', $name);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':password', $hashedPassword);
+
+            if ($stmt->execute()) {
+                $_SESSION['success'] = "Inscription réussie, vous pouvez vous connecter.";
+                header("Location: login.php");
+                exit();
+            } else {
+                $error = "Une erreur s'est produite lors de l'inscription.";
+            }
+        }
+    }
+}
 
 ?>
 
@@ -29,39 +80,77 @@ require 'db_connect.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
-            background-color: #f4f4f4;
-        }
-        .container {
-            margin-top: 50px;
-        }
-        .card {
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .upload-form button {
-            background: #38B6FF;
-            color: white;
-            border-radius: 5px;
-            transition: 0.3s;
-        }
-        .upload-form button:hover {
-            background: #FF3131;
-        }
-        .image-list img {
-            border-radius: 5px;
-            margin: 10px;
-            transition: 0.3s;
-        }
-        .image-list img:hover {
-            transform: scale(1.05);
-        }
-        .delete-btn {
-            transition: 0.3s;
-        }
-        .delete-btn:hover {
-            background: #d9534f;
-        }
+    background: linear-gradient(to right, #f8f9fa, #e3f2fd);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: none;
+}
+
+h2, h4 {
+    font-weight: 600;
+}
+
+.upload-form button {
+    background: linear-gradient(to right, #00c6ff, #0072ff);
+    color: white;
+    font-weight: bold;
+    border-radius: 30px;
+    padding: 10px 20px;
+    transition: all 0.3s ease-in-out;
+}
+
+.upload-form button:hover {
+    background: linear-gradient(to right, #ff4e50, #f9d423);
+    color: #fff;
+}
+
+.image-list img {
+    border-radius: 0.75rem;
+    transition: 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.image-list img:hover {
+    transform: scale(1.05);
+}
+
+.delete-btn {
+    border-radius: 20px;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+}
+
+hr.border-dark {
+    opacity: 0.3;
+    border-width: 2px;
+}
+
+ul.list-unstyled li {
+    padding: 0.5rem;
+    border-left: 3px solid #007bff;
+    background-color: #f8f9fa;
+    margin-bottom: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+input.form-control {
+    border-radius: 0.5rem;
+}
+
     </style>
 </head>
 <body>
@@ -87,17 +176,17 @@ require 'db_connect.php';
 </nav>
 
 
-    <div class="container">
+<section class="container my-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card shadow p-4">
-                    <h2 class="text-center text-primary">Bienvenue, <?php echo htmlspecialchars($_SESSION['name']); ?> !</h2>
+            <div class="card shadow p-4 mb-5">
+            <h2 class="text-center text-primary">Bienvenue, <?php echo htmlspecialchars($_SESSION['name']); ?> !</h2>
                     <p class="text-center text-muted">Votre email : <?php echo htmlspecialchars($_SESSION['email']); ?></p>
                     
                     <h4 class="mt-4"><i class="fas fa-upload"></i> Uploader une image</h4>
                     <form action="upload.php" method="post" enctype="multipart/form-data" class="upload-form d-flex flex-column gap-3">
-                        <input type="file" name="file" id="file" class="form-control" required>
-                        <button type="submit" name="submit" class="btn"><i class="fas fa-cloud-upload-alt"></i> Uploader</button>
+                        <input type="file" name="file" id="file" class="form-control  mb-3" required>
+                        <button type="submit" name="submit" class="btn "><i class="fas fa-cloud-upload-alt"></i> Uploader</button>
                     </form>
                     
                     <h4 class="mt-4"><i class="fas fa-images"></i> Images Uploadées</h4>
@@ -254,6 +343,52 @@ require 'db_connect.php';
 
     </div>
 </section>
+
+
+<div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h4>Inscription</h4>
+                    </div>
+                    <div class="card-body">
+                        <?php if (!empty($error)) : ?>
+                            <div class="alert alert-danger">
+                                <?php echo $error; ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <form action="espacemembre.php" method="POST">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nom</label>
+                                <input type="text" name="name" class="form-control" id="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Adresse e-mail</label>
+                                <input type="email" name="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mot de passe</label>
+                                <input type="password" name="password" class="form-control" id="password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirmez le mot de passe</label>
+                                <input type="password" name="confirm_password" class="form-control" id="confirm_password" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">S'inscrire</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS (optional for interactive elements) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
 <script>
     

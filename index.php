@@ -6,6 +6,8 @@
     <title>Azure - Restaurant</title>
     <link rel="stylesheet" href="assets/css/style.css" type="text/css" />
     <link rel="icon" href="assets/img/azure_icon.png" type="image/icon type">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <?php
     require 'db_connect.php';
     ?>
@@ -141,18 +143,30 @@
 
 
 
+<section class="galerie" id="galerie">
+<div class="titlegalerie mb-4">
+    <h2 class="Titrebleumarin text-start">Galerie</h2>
+    <div class="traitnoirgalerie mb-3" style="width: 100px; height: 3px; background-color: black;"></div>
+    <p class="bhead text-start">Un aperçu visuel de notre ambiance et de nos délices</p>
+  </div>
 
-    <section class="galerie" id="galerie">
-        <div class="titlegalerie">
-        <h2 class="Titrebleumarin">Galerie</h2>
-        <div class="traitnoirgalerie"></div>
-        <p class="bhead">Un aperçu visuel de notre ambiance et de nos délices</p>
-    </div>  <br><br>
-    <div class="rectangle">
-        <img src="assets/img/Gallerie.png" alt="Image dans le rectangle">
+  <div class="container">
+    <div class="row g-4">
+        <?php
+        $files = glob("uploads/*.{jpg,jpeg,png,webp,gif}", GLOB_BRACE);
+        foreach ($files as $file) {
+            echo '<div class="col-lg-4 col-md-6">
+                    <img src="'.$file.'" class="w-100 shadow-1-strong rounded mt-4" alt="Image">
+                  </div>';
+        }
+        ?>
     </div>
-    <br>
-    </section>
+</div>
+
+  <!-- End Gallery Grid -->
+
+  <br>
+</section>
 
 
     <section class="apropos" id="apropos">
