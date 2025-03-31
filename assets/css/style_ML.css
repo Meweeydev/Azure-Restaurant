@@ -1,0 +1,76 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #ffffff;
+}
+
+.legal-container {
+    width: 80%;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #1E1E1E;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    max-width: 150px; /* Ajuste la taille du logo selon tes besoins */
+    height: auto;
+    margin-bottom: 20px; /* Espacement entre le logo et le titre */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2em;
+    color: #f1f1f1;
+}
+
+.legal-content h2 {
+    margin-top: 20px;
+    font-size: 1.5em;
+    border-bottom: 2px solid #D4AF37;
+    padding-bottom: 5px;
+    color: #ffffff;
+}
+
+.legal-content p {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.legal-content strong {
+    font-weight: bold;
+}
+
+footer {
+    margin-top: auto; /* Pousse le footer en bas du conteneur */
+    text-align: center;
+    padding: 20px 0;
+}
+
+.home-button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1em;
+    color: #fff;
+    background-color: #D4AF37; /* Couleur du bouton */
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.home-button:hover {
+    background-color: #f4c11bd6; /* Couleur du bouton au survol */
+}
