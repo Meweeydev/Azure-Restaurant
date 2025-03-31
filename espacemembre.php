@@ -20,52 +20,6 @@ if (isset($_GET['error'])) {
 
 require 'db_connect.php';
 
-///// INSCRIPTION : 
-
-// Traitement du formulaire lors de la soumission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
-    $confirm_password = trim($_POST['confirm_password']);
-
-    // Validation des champs
-    if (empty($name) || empty($email) || empty($password) || empty($confirm_password)) {
-        $error = "Veuillez remplir tous les champs.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "L'adresse e-mail est invalide.";
-    } elseif ($password !== $confirm_password) {
-        $error = "Les mots de passe ne correspondent pas.";
-    } else {
-        // Vérifier si l'e-mail existe déjà
-        $stmt = $conn->prepare("SELECT * FROM user WHERE email = :email");
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        $existingUser = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($existingUser) {
-            $error = "Un compte avec cet e-mail existe déjà.";
-        } else {
-            // Hachage du mot de passe
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-            // Insérer le nouvel utilisateur dans la base de données
-            $stmt = $conn->prepare("INSERT INTO user (name, email, password, signin_date) VALUES (:name, :email, :password, NOW())");
-            $stmt->bindParam(':name', $name);
-            $stmt->bindParam(':email', $email);
-            $stmt->bindParam(':password', $hashedPassword);
-
-            if ($stmt->execute()) {
-                $_SESSION['success'] = "Inscription réussie, vous pouvez vous connecter.";
-                header("Location: login.php");
-                exit();
-            } else {
-                $error = "Une erreur s'est produite lors de l'inscription.";
-            }
-        }
-    }
-}
-
 ?>
 
 
@@ -163,12 +117,10 @@ input.form-control {
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/#accueil">Accueil</a></li>
-                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/#menu">Menu</a></li>
-                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/#reservation">Réservation</a></li>
-                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/#galerie">Galerie</a></li>
-                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/#apropos">À Propos</a></li>
-                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/#contact">Contact</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/#accueil">Retour Site</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/espacemembre.php/#menu">Gestion Menu</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/espacemembre.php/#galerie">Gestion Galerie</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://azure-restaurant.alwaysdata.net/register.php">Inscription</a></li>
                 <a class="nav-link text-danger" href="logout.php"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
             </ul>
         </div>
@@ -183,7 +135,7 @@ input.form-control {
             <h2 class="text-center text-primary">Bienvenue, <?php echo htmlspecialchars($_SESSION['name']); ?> !</h2>
                     <p class="text-center text-muted">Votre email : <?php echo htmlspecialchars($_SESSION['email']); ?></p>
                     
-                    <h4 class="mt-4"><i class="fas fa-upload"></i> Uploader une image</h4>
+                    <h4 class="mt-4"><i class="fas fa-upload" id="galerie"></i> Uploader une image</h4>
                     <form action="upload.php" method="post" enctype="multipart/form-data" class="upload-form d-flex flex-column gap-3">
                         <input type="file" name="file" id="file" class="form-control  mb-3" required>
                         <button type="submit" name="submit" class="btn "><i class="fas fa-cloud-upload-alt"></i> Uploader</button>
@@ -209,7 +161,7 @@ input.form-control {
         </div>
     </div>
 
-    <div class="text-center my-4">
+    <div class="text-center my-4" id="menu">
     <h2 class="text-primary">Rédaction du nouveau menu</h2>
     <hr class="border-dark w-25 mx-auto">
     <p class="lead">Savourez la Méditerranée, une bouchée à la fois.</p> 
@@ -344,47 +296,6 @@ input.form-control {
     </div>
 </section>
 
-
-<div class="container">
-        <div class="row justify-content-center mt-5">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <h4>Inscription</h4>
-                    </div>
-                    <div class="card-body">
-                        <?php if (!empty($error)) : ?>
-                            <div class="alert alert-danger">
-                                <?php echo $error; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <form action="espacemembre.php" method="POST">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Nom</label>
-                                <input type="text" name="name" class="form-control" id="name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Adresse e-mail</label>
-                                <input type="email" name="email" class="form-control" id="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Mot de passe</label>
-                                <input type="password" name="password" class="form-control" id="password" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="confirm_password" class="form-label">Confirmez le mot de passe</label>
-                                <input type="password" name="confirm_password" class="form-control" id="confirm_password" required>
-                            </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">S'inscrire</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Bootstrap JS (optional for interactive elements) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
